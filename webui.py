@@ -1,5 +1,6 @@
 from datetime import datetime
 import urllib.request
+import config
 import base64
 import json
 import time
@@ -70,21 +71,21 @@ def load_and_prepare_payload(file_path, image_path, ref_image_path):
     payload['height'] = new_height
     payload['width'] = new_width
     payload['batch_size'] = 1
-    payload['alwayson_scripts']['ControlNet']['args'][1]['image']['image'] = encoded_ref_image
-    payload['alwayson_scripts']['ControlNet']['args'][1]['image']['mask'] = None
+    payload['alwayson_scripts']['ControlNet']['args'][0]['image']['image'] = encoded_ref_image
+    payload['alwayson_scripts']['ControlNet']['args'][0]['image']['mask'] = None
 
     return payload
 
 def main():
-    webui_server_url = 'http://172.20.176.1:7860'
+    webui_server_url = config.API_ENDPOINT
     output_dir = 'api_out'
     api_client = StableDiffusionAPI(webui_server_url, output_dir)
 
     payload_file_path = 'payload.json'
-    image_path = "/mnt/c/Users/Anastasiia/Downloads/Telegram Desktop/doors.interior.jpg"
-    ref_image_path = "/mnt/c/Users/Anastasiia/Downloads/Telegram Desktop/2.jpg"
+    image_path = "temp/292690107_image.jpg"
+    ref_image_path = "temp/292690107_ref_image.jpg"
 
-    payload = load_and_prepare_payload(payload_file_path,image_path,ref_image_path)
+    payload = load_and_prepare_payload(payload_file_path, image_path, ref_image_path)
 
     ### debug mode
     output_payload_file_path = 'payload_output.json'

@@ -5,7 +5,7 @@ import os
 from webui import StableDiffusionAPI, resize_image_to_max_dimension, load_and_prepare_payload
 
 bot = telebot.TeleBot(config.TOKEN)
-api_client = StableDiffusionAPI('http://172.20.176.1:7860', 'api_out')
+webui_server_url = config.API_ENDPOINT
 
 users_process_data = {}
 
@@ -73,7 +73,6 @@ def process_reference_upload(message):
 def process_images_and_send(chat_id, image_path, ref_image_path):
     # This is a simplified version; you may want to handle this asynchronously in production
 
-    webui_server_url = 'http://172.20.176.1:7860'
     output_dir = 'api_out'
     api_client = StableDiffusionAPI(webui_server_url, output_dir)
     payload_file_path = 'payload.json'
