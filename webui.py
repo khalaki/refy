@@ -71,8 +71,8 @@ def load_and_prepare_payload(file_path, image_path, ref_image_path):
     payload['height'] = new_height
     payload['width'] = new_width
     payload['batch_size'] = 1
-    payload['alwayson_scripts']['ControlNet']['args'][0]['image']['image'] = encoded_ref_image
-    payload['alwayson_scripts']['ControlNet']['args'][0]['image']['mask'] = None
+    payload['alwayson_scripts']['ControlNet']['args'][1]['image']['image'] = encoded_ref_image
+    payload['alwayson_scripts']['ControlNet']['args'][1]['image']['mask'] = None
 
     return payload
 
@@ -82,8 +82,8 @@ def main():
     api_client = StableDiffusionAPI(webui_server_url, output_dir)
 
     payload_file_path = 'payload.json'
-    image_path = "temp/292690107_image.jpg"
-    ref_image_path = "temp/292690107_ref_image.jpg"
+    image_path = "temp/image.png"
+    ref_image_path = "temp/ref_image.jpg"
 
     payload = load_and_prepare_payload(payload_file_path, image_path, ref_image_path)
 
