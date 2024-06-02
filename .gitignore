@@ -2,5 +2,5 @@
 payload_output.json
 __pycache__
 api_out
-config.py
+secrets.py
 temp
