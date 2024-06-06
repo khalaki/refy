@@ -1,5 +1,6 @@
 import os
 import config
+from telebot import types
 from utils.bot import telegram
 from utils.api import StableDiffusionAPI
 from utils.payload_utils import load_and_prepare_payload
@@ -21,16 +22,22 @@ def process_images_and_send(chat_id, image_path, ref_image_path, prompt):
     # Sort the files to ensure they are processed in a meaningful order
     sorted_image_files = sorted(image_files, key=lambda x: (int(x.split('-')[-1].split('.')[0]) if x.split('-')[-1].split('.')[0].isdigit() else float('inf'), x))
 
-    # Send only the first four processed images back to the user
+    media_group = []
     for img_file in sorted_image_files[:4]:
         img_path = os.path.join(api_client.out_dir_i2i, img_file)
         with open(img_path, 'rb') as photo:
-          telegram.send_photo(chat_id, photo)
+            media_group.append(types.InputMediaPhoto(photo.read()))  # Read the file data
+
+    # Send all photos in the group at once
+    try:
+        telegram.send_media_group(chat_id, media_group)
+    except Exception as e:  # Add error handling for send_media_group
+        print(f"Error sending media group: {e}")
     
     # Cleanup: Remove all images in the output directory after sending the first four
     for img_file in os.listdir(api_client.out_dir_i2i):
         os.remove(os.path.join(api_client.out_dir_i2i, img_file))
 
     # Also remove the uploaded images to prevent storage overflow
-    os.remove(image_path)
-    os.remove(ref_image_path)
+    #os.remove(image_path)
+    #os.remove(ref_image_path)
