@@ -5,14 +5,14 @@ from utils.api import StableDiffusionAPI
 from utils.payload_utils import load_and_prepare_payload
 
 
-def process_images_and_send(chat_id, image_path, ref_image_path):
+def process_images_and_send(chat_id, image_path, ref_image_path, prompt):
     # This is a simplified version; you may want to handle this asynchronously in production
 
     output_dir = 'api_out'
     api_client = StableDiffusionAPI(config.WEBUI_SERVER_URL, config.OUTPUT_DIR)
     payload_file_path = 'payload.json'
 
-    payload = load_and_prepare_payload(payload_file_path, image_path, ref_image_path)
+    payload = load_and_prepare_payload(payload_file_path, image_path, ref_image_path, prompt)
     api_client.call_img2img_api(**payload)
     
     

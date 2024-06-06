@@ -3,12 +3,6 @@ from telebot.handler_backends import State, StatesGroup
 from utils.bot import telegram
 from handlers import init_handlers
 
-class UserStates(StatesGroup):
-    START = State()
-    IMAGE_TYPE = State()
-    PHOTO_UPLOAD = State()
-    REFERENCE_UPLOAD = State()
-
 def error_handler(func):
     def wrapper(message, *args, **kwargs):
         try:

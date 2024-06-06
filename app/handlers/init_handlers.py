@@ -1,7 +1,7 @@
 from telebot import types
 from .photo_handlers import process_image_type_step
 from utils.bot import telegram, users_process_data
-from decorators import start_command_handler, log_message_handler, error_handler
+from decorators import log_message_handler, error_handler
 
 @telegram.message_handler(commands=['start'])
 @log_message_handler
