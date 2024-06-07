@@ -37,6 +37,10 @@ def process_image_type_step(message):
         prompt = "High-quality photo of the exterior of a building"
         msg = telegram.send_message(chat_id, "Please upload a photo of the exterior.")
         telegram.register_next_step_handler(msg, process_photo_upload)
+    if image_type == 'Artwork':
+        prompt = "Illustration, artwork, painting"
+        msg = telegram.send_message(chat_id, "Please upload your base image.")
+        telegram.register_next_step_handler(msg, process_photo_upload)
     elif image_type == 'Interior':
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         markup.add('Kitchen', 'Living Room', 'Bathroom')  # Add more options as needed
