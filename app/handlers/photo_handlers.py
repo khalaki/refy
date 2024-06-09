@@ -92,9 +92,6 @@ def process_photo_upload(message):
 	telegram.register_next_step_handler(msg, process_reference_upload)
 
 
-@start_command_handler
-@log_message_handler
-@error_handler
 def process_reference_upload(message):
 	chat_id = message.chat.id
 
