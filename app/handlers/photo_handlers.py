@@ -32,14 +32,16 @@ def process_image_type_step(message):
 	image_type = message.text
 	users_process_data[chat_id] = {'image_type': image_type}
 
+	remove_markup = types.ReplyKeyboardRemove(selective=False)
+
 	prompt = ""
 	if image_type == 'Exterior':
 		prompt = "High-quality photo of the exterior of a building"
-		msg = telegram.send_message(chat_id, "Please upload a photo of the exterior.")
+		msg = telegram.send_message(chat_id, "Please upload a photo of the exterior.", reply_markup=remove_markup)
 		telegram.register_next_step_handler(msg, process_photo_upload)
 	if image_type == 'Artwork':
 		prompt = "Illustration, artwork, painting"
-		msg = telegram.send_message(chat_id, "Please upload your base image.")
+		msg = telegram.send_message(chat_id, "Please upload your base image.", reply_markup=remove_markup)
 		telegram.register_next_step_handler(msg, process_photo_upload)
 	elif image_type == 'Interior':
 		markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -66,7 +68,9 @@ def process_room_type_step(message):
 	prompt = prompt_map.get(room_type, "")
 	users_process_data[chat_id]['prompt'] = prompt
 
-	msg = telegram.send_message(chat_id, "Please upload a photo of the interior.")
+	reply_markup = types.ReplyKeyboardRemove(selective=False)
+
+	msg = telegram.send_message(chat_id, "Please upload a photo of the interior.", reply_markup=reply_markup)
 	telegram.register_next_step_handler(msg, process_photo_upload)
 
 @start_command_handler
@@ -87,7 +91,6 @@ def process_photo_upload(message):
 	msg = telegram.send_message(chat_id, "Now, please upload a reference image.")
 	telegram.register_next_step_handler(msg, process_reference_upload)
 
-regenerate_message = None
 
 @start_command_handler
 @log_message_handler
@@ -107,13 +110,19 @@ def process_reference_upload(message):
 	telegram.reply_to(message, "Thank you! Processing your request...")
 	prompt = users_process_data[chat_id].get('prompt', '')
 
+	# Store necessary data for regeneration
+	users_process_data[chat_id]["last_image_path"] = users_process_data[chat_id]['image_path']
+	users_process_data[chat_id]["last_ref_image_path"] = ref_image_path
+	users_process_data[chat_id]["last_prompt"] = prompt
+
 	try:
 		process_images_and_send(chat_id, users_process_data[chat_id]['image_path'], ref_image_path, prompt)
 	except Exception as e:
 		print(f"Image processing error: {e}")
 	#	# Retry button if processing failed
+		# Add "Regenerate" button
 		markup = types.InlineKeyboardMarkup()
-		markup.add(types.InlineKeyboardButton("Retry", callback_data=f"retry:{chat_id}:{users_process_data[chat_id]['image_path']}:{ref_image_path}:{prompt}"))
+		markup.add(types.InlineKeyboardButton("Regenerate", callback_data=f"regenerate:{chat_id}"))
 		telegram.send_message(chat_id, "Image processing failed. Please try again.", reply_markup=markup)
 		return
 	
@@ -125,8 +134,7 @@ def process_reference_upload(message):
 	# Add "Regenerate" button
 	markup = types.InlineKeyboardMarkup()
 	markup.add(types.InlineKeyboardButton("Regenerate", callback_data=f"regenerate:{chat_id}"))
-	global regenerate_message  # Use global variable
-	regenerate_message = telegram.send_message(chat_id, "Images processed! Click below to regenerate with the same inputs.", reply_markup=markup)
+	telegram.send_message(chat_id, "Images processed! Click below if you want to regenerate with the same inputs. Click /start if you want to use different inputs.", reply_markup=markup)
 
 @telegram.callback_query_handler(func=lambda call: call.data.startswith('regenerate:'))
 def handle_regenerate_callback(call):
@@ -151,20 +159,13 @@ def handle_regenerate_callback(call):
 	try:
 		process_images_and_send(chat_id, image_path, ref_image_path, prompt)
 
-		# Replace "Regenerating..." message with new regenerate button
+		# Add "Regenerate" button
 		markup = types.InlineKeyboardMarkup()
 		markup.add(types.InlineKeyboardButton("Regenerate", callback_data=f"regenerate:{chat_id}"))
-		telegram.edit_message_text(
-			chat_id=new_message.chat.id,
-			message_id=new_message.message_id,
-			text="Images processed! Click below to regenerate with the same inputs.",
-			reply_markup=markup
-		) 
+		telegram.send_message(chat_id, "Images processed! Click below if you want to regenerate with the same inputs. Click /start if you want to use different inputs.", reply_markup=markup)
 
 	except Exception as e:
 		print(f"Image processing error: {e}")
-		telegram.edit_message_text(
-			chat_id=new_message.chat.id,
-			message_id=new_message.message_id,
-			text="Image processing failed. Please try again later."
-		)
+		markup = types.InlineKeyboardMarkup()
+		markup.add(types.InlineKeyboardButton("Regenerate", callback_data=f"regenerate:{chat_id}"))
+		telegram.send_message(chat_id, "Image processing failed. Please try again.", reply_markup=markup)
